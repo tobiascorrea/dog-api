@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Dog API Test Suite" parallel="classes" thread-count="3">
+    <test name="All API Tests">
+        <classes>
+            <class name="tests.RandomImageTest"/>
+            <class name="tests.BreedImagesTest"/>
+            <class name="tests.RandomImageByBreedTest"/>
+            <class name="tests.SubBreedListTest"/>
+            <class name="tests.SubBreedImagesTest"/>
+            <class name="tests.SubBreedMultipleImagesTest"/>
+            <class name="tests.SubBreedRandomImageTest"/>
+            <class name="tests.BreedListTest"/>
+            <class name="tests.BreedRandomImageTest"/>
+        </classes>
+    </test>
+</suite>
