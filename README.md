@@ -18,7 +18,7 @@ Este projeto automatiza testes da [Dog CEO API](https://dog.ceo/dog-api/) utiliz
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/dog-api-automation.git
+git clone https://github.com/tobiascorrea/dog-api
 cd dog-api-automation
 ```
 
