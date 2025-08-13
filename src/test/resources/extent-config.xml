@@ -1,0 +1,11 @@
+<extentreports>
+  <configuration>
+    <encoding>utf-8</encoding>
+    <protocol>HTTPS</protocol>
+    <theme>standard</theme>
+    <timelineEnabled>true</timelineEnabled>
+    <reportName>Dog API Automation</reportName>
+    <documentTitle>Dog API Test Report</documentTitle>
+  </configuration>
+</extentreports>
+

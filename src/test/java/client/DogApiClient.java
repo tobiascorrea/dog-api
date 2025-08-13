@@ -111,4 +111,12 @@ public class DogApiClient {
                 .pathParam("count", count)
                 .post("/breed/{breed}/{subBreed}/images/random/{count}");
     }
+
+    public Response get(String path) {
+        return given().when().get(path);
+    }
+
+    public Response post(String path) {
+        return given().when().post(path);
+    }
 }

@@ -6,36 +6,132 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  test:
-    name: Executar testes automatizados
-    runs-on: ubuntu-latest
+concurrency:
+  group: ci-dog-api-${{ github.ref }}
+  cancel-in-progress: true
 
+env:
+  MAVEN_OPTS: -Xmx1G -Duser.language=pt -Duser.region=BR
+  TZ: America/Sao_Paulo
+  # Pode ser sobrescrito definindo Repository Variable "SMOKE_MAX_FAILS"
+  SMOKE_MAX_FAILS: ${{ vars.SMOKE_MAX_FAILS || 0 }}
+
+jobs:
+  smoke:
+    name: Smoke (@fumaca)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Java 21 + Cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Versões
+        run: |
+          java -version
+          mvn -v
+      - name: Testes Smoke
+        continue-on-error: true
+        run: mvn -B clean test -Dcucumber.filter.tags="@fumaca"
+      - name: Artefatos Smoke (Cucumber)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-cucumber-report
+          path: |
+            target/cucumber-report.html
+            target/cucumber-report.json
+          retention-days: 5
+      - name: Resumo Smoke
+        if: always()
+        run: |
+          echo "## Smoke Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f target/cucumber-report.json ]; then
+            SC=$(grep -o '"keyword":"Scenario"' target/cucumber-report.json | wc -l || true)
+            FL=$(grep -o '"status":"failed"' target/cucumber-report.json | wc -l || true)
+            echo "Cenários Smoke: $SC" >> $GITHUB_STEP_SUMMARY
+            echo "Falhas Smoke: $FL" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Quality Gate Smoke
+        if: always()
+        run: |
+          echo "## Quality Gate Smoke" >> $GITHUB_STEP_SUMMARY
+          if [ -f target/cucumber-report.json ]; then
+            FAILED=$(grep -o '"status":"failed"' target/cucumber-report.json | wc -l || true)
+            echo "Falhas detectadas: $FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "Limite permitido: $SMOKE_MAX_FAILS (originado de vars.SMOKE_MAX_FAILS ou fallback)" >> $GITHUB_STEP_SUMMARY
+            if [ "$FAILED" -gt "$SMOKE_MAX_FAILS" ]; then
+              echo "Quality gate reprovado (falhas > limite)." >> $GITHUB_STEP_SUMMARY
+              exit 1
+            else
+              echo "Quality gate aprovado." >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "Relatório JSON não encontrado; falhando quality gate por segurança." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  test:
+    name: Regressão (Java 21)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: smoke
+    if: needs.smoke.result == 'success'
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
-
-      - name: Instalar Java 21
+      - name: Instalar Java 21 (Temurin) + Cache Maven
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '21'
-
-      - name: Cache do Maven
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven
-
-      - name: Build e Teste com Maven
-        run: mvn clean test
-
-      - name: Publicar Relatório HTML (Extent)
+          cache: maven
+      - name: Verificar versão Java/Maven
+        run: |
+          java -version
+          mvn -v
+      - name: Build + Test (Cucumber + Extent)
+        run: mvn -B clean test
+      - name: Publicar Relatório Extent
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: extent-report
           path: target/extent-report/
+          retention-days: 7
+      - name: Publicar Relatórios Cucumber
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: |
+            target/cucumber-report.html
+            target/cucumber-report.json
+          retention-days: 7
+      - name: Publicar Relatórios Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
+      - name: Resumo rápido (cenários executados)
+        if: always()
+        run: |
+          echo "## Resumo de Testes" >> $GITHUB_STEP_SUMMARY
+          if [ -f target/cucumber-report.json ]; then
+            SCENARIOS=$(grep -o '"keyword":"Scenario"' target/cucumber-report.json | wc -l || true)
+            FAILED=$(grep -o '"status":"failed"' target/cucumber-report.json | wc -l || true)
+            echo "Cenários: $SCENARIOS" >> $GITHUB_STEP_SUMMARY
+            echo "Falhas: $FAILED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Relatório JSON não encontrado" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Failing build se falhas conhecidas excederem limite (exemplo)
+        if: failure()
+        run: |
+          echo "Falhas detectadas. Verifique artefatos para detalhes."

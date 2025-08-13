@@ -1,135 +1,117 @@
-# 🐶 Dog API Automated Test Suite
+# 🐶 Dog API Test Automation (Cucumber + RestAssured)
 
-Este projeto automatiza testes da [Dog CEO API](https://dog.ceo/dog-api/) utilizando **TestNG**, **RestAssured** e relatórios visuais com **ExtentReports**. Ele cobre múltiplos cenários de validação, incluindo retornos válidos, métodos inválidos, sub-raças, quantidades de imagens, e mais — tudo com paralelismo configurável.
-
----
-
-## 📦 Tecnologias Utilizadas
+Suite de testes da [Dog CEO API](https://dog.ceo/dog-api/) usando:
 - Java 21
 - Maven
-- TestNG
+- Cucumber (Gherkin) + cucumber-testng runner
 - RestAssured
 - JSON Schema Validator
-- ExtentReports
+- ExtentReports (adapter cucumber7)
 
----
+## ✅ Objetivos
+Cobrir validações funcionais, negativas, contrato (schema), consistência de URLs e limites (count), mantendo cenários independentes e steps altamente coesos.
 
-## 🚀 Como executar o projeto
-
-### 1. Clone o repositório
-```bash
-git clone https://github.com/tobiascorrea/dog-api
-cd dog-api-automation
+## 🚀 Execução
 ```
-
-### 2. Instale as dependências
-```bash
-mvn clean install
-```
-
-### 3. Execute todos os testes
-```bash
 mvn clean test
 ```
-
-### 4. Execução com paralelismo personalizado
-```bash
-mvn clean test -Dthreads=4
+Filtrar por tags (exemplos):
 ```
-🔁 Esse parâmetro configura dinamicamente o número de threads. Ideal para adaptar a execução em diferentes máquinas (ex: CI/CD ou ambientes locais mais simples).
-
----
-
-## 📂 Estrutura de Projeto
+mvn test -Dcucumber.filter.tags="@fumaca"
+mvn test -Dcucumber.filter.tags="@regressao and not @known_issue"
 ```
-📁 src
- └── test
-     ├── java
-     │   ├── client/                 -> Cliente da API
-     │   ├── config/                 -> Configurações base
-     │   ├── dataprovider/          -> DataProviders reutilizáveis
-     │   ├── listener/              -> Listener do ExtentReport
-     │   ├── tests/                 -> Classes de Teste organizadas por endpoint
-     │   └── utils/                 -> Utilitários (ex: ExtentReportManager)
-     └── resources
-         └── schemas/               -> Schemas JSON para validação de contrato
+Relatórios:
+- Cucumber HTML: target/cucumber-report.html
+- Extent Spark: target/extent-report/extent-cucumber.html
+
+## 🏷️ Tags (principal uso)
+- @fumaca @basico: cobertura mínima de saúde
+- @regressao: suíte completa
+- @multiplas @limite @flexivel: variações de quantidade
+- @negativo @metodo @input @case: cenários negativos por tipo
+- @subracas: escopo de sub-raças
+- @performance: métricas de tempo
+- @contrato: validação de schema
+- @variacao: verificação de variação entre chamadas
+
+## 🏗️ Arquitetura de Steps (SRP – Single Responsibility Principle)
+Cada responsabilidade foi isolada em uma classe de steps, facilitando manutenção e extensão.
+
+| Classe | Responsabilidade |
+|--------|------------------|
+| CommonSetupSteps | Configuração de base (baseURI) |
+| ParameterSteps | Definição de parâmetros (raça, sub-raça, count) |
+| HttpRequestSteps | Execução simples de GET/POST + parsing inicial |
+| VariationSteps | Duas chamadas consecutivas e comparação |
+| StatusSteps | Validações de status HTTP e campo status |
+| MethodValidationSteps | Verificação de método não permitido |
+| BreedListSteps | Regras específicas da listagem de raças |
+| SubBreedListSteps | Regras específicas de sub-raças (lista vazia / com itens) |
+| ImageListValidationSteps | Lista de imagens (quantidade, limites, URLs, raça/sub-raça) |
+| SingleImageValidationSteps | Validação de imagem única (URL, conteúdo) |
+| PerformanceSteps | Tempo de resposta máximo |
+| SchemaValidationSteps | Validação de contrato JSON |
+| ScenarioContext | Armazena estado por cenário (Response, imagens, parâmetros) |
+
+A antiga classe "ApiGenericSteps" foi descontinuada para evitar acoplamento excessivo.
+
+## 📂 Estrutura Atual (resumida)
 ```
-
----
-
-## 🧪 Testes Automatizados
-
-### ✅ Cenários Cobertos
-- ✅ Listagem de raças e sub-raças
-- ✅ Imagens aleatórias por raça e sub-raça
-- ✅ Variações de quantidade (count) de imagens
-- ✅ Métodos inválidos (POST em endpoints GET)
-- ✅ Casos inválidos de sub-raças, caracteres especiais e case sensitivity
-- ✅ Validação de contrato com JSON Schema
-- ✅ Validação de URLs de imagens
-- ✅ Desempenho e tempo de resposta
-
-### 🧠 Sobre as mensagens de asserção nos testes
-As mensagens de erro utilizadas nos métodos `Assert` **não são respostas da API**, e sim mensagens **definidas manualmente no código de teste**. Elas servem para:
-
-- Explicar **claramente o que foi validado**;
-- Melhorar a leitura dos relatórios de teste;
-- Auxiliar na análise de falhas durante debugging ou revisão por outros times.
-
-**Exemplo:**
-```java
-      Assert.assertFalse(images.isEmpty(), "A lista de imagens não deve estar vazia");
-```
-Caso a API retorne uma lista vazia, o relatório HTML exibirá essa mensagem personalizada para facilitar o entendimento.
-
----
-
-## 📊 Relatórios de Teste
-
-Após a execução, um relatório HTML completo será gerado automaticamente em:
-```
-target/extent-report/extent-report.html
+src/test/java
+ ├─ client/              # Cliente HTTP (padrão simples)
+ ├─ runner/              # CucumberTestRunner
+ ├─ steps/               # Steps coesos (ver tabela)
+ ├─ support/             # ScenarioContext
+ └─ resources
+    ├─ features/         # Cenários Gherkin refinados + tags
+    ├─ schemas/          # JSON Schemas
+    ├─ extent.properties # Config Extent
+    └─ extent-config.xml # Layout do relatório
 ```
 
-### Exibe:
-- ✔️ Pass/Fail de cada teste
-- ⏱️ Tempo de execução
-- 📌 Status HTTP e mensagens esperadas
-- 🔎 Validações específicas por URL, parâmetros, schema, etc.
+## 🔁 Padrão de Parametrização
+Placeholders nos caminhos: `{breed}`, `{subBreed}`, `{count}` são resolvidos dinamicamente antes da requisição.
 
----
+Exemplo:
+```
+Given a raça "pug"
+And o count 3
+When eu envio GET para "/breed/{breed}/images/random/{count}"
+Then o status code deve ser 200
+And deve retornar no máximo 3 imagens
+```
 
-## 🐞 Bugs e Inconsistências Encontradas
+## 🔍 Estratégia de Flexibilização
+Alguns endpoints podem retornar menos imagens que o solicitado. Cenários foram marcados com `@flexivel` e usam o step:
+```
+And deve retornar no máximo X imagens
+```
+Isso evita falsos negativos mantendo rastreabilidade.
 
-Durante os testes, foram identificadas as seguintes inconsistências comportamentais da API:
+## 🧪 Validações Implementadas (resumo)
+- Status HTTP & campo status
+- Conteúdo e estrutura de lista de raças/sub-raças
+- Quantidade exata vs limite vs flexível
+- URLs (https, extensão .jpg, contém raça/sub-raça)
+- Método não permitido (POST em endpoints só GET)
+- Schema JSON (contrato)
+- Tempo de resposta
+- Variação entre chamadas consecutivas
+- Casos negativos (raça/sub-raça inválida, caracteres especiais, case sensitivity)
 
-### 1. Diferenciação entre letras maiúsculas e minúsculas
-- `GET /breed/HOUND/images` → Retorna 404.
-- A API é **case-sensitive**, o que não é comum em RESTful APIs.
+## 📊 Relatórios Extent
+Config via `extent.properties` + `extent-config.xml`. Ajustes de tema podem ser feitos no XML (theme, reportName, etc.).
 
-### 2. Mesmo parâmetro `count` com valores extremos retorna status `200`, mas lista incompleta
-- Quando `count` > 50, algumas raças retornam uma lista menor ou limitada.
+## ♻️ Escalabilidade
+- Adicionar nova categoria de validação: criar classe Step isolada.
+- Reuso garantido pelo ScenarioContext injetado (PicoContainer via cucumber-picocontainer).
+- Facilidade para plug‑in de novas métricas (ex: cobertura de headers, tracing IDs).
 
-### 3. Parâmetro `count` com valor negativo retorna status 200
-- `GET /breed/hound/images/random/-3` → Retorna 200.
-- A API não deveria aceitar valores negativos no parâmetro `count`, pois são semanticamente inválidos.
-- Isso pode causar inconsistência em chamadas programáticas ou relatórios que esperam controle rígido sobre os limites de entrada.
-    
-
-Esses comportamentos foram documentados e testados com asserts descritivos para facilitar o rastreio e ajustes futuros.
-
----
-
-## 👨‍💻 Contribuição
-Pull Requests são bem-vindos! Sinta-se à vontade para sugerir melhorias, novos cenários de teste ou integrar com outros frameworks como Allure ou Jenkins.
-
----
-
-## 📬 Contato
-Desenvolvido por [Tobias Correa Camilo] — QA Engineer | Test Automation.  
-📧 thobias2501@gmail.com
-
----
+## 🛠️ Próximos Passos Sugeridos
+- Adicionar perfil Maven (ex: smoke) filtrando @fumaca.
+- Introduzir Allure para comparação de relatórios.
+- Pipeline CI (GitHub Actions) publicando artefatos HTML.
+- Tag @known_issue para comportamentos ainda não alinhados com o esperado.
 
 ## 🏁 Licença
-Este projeto é distribuído sob a licença MIT.
+MIT.
