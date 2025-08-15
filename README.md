@@ -8,12 +8,29 @@ Suite de testes da [Dog CEO API](https://dog.ceo/dog-api/) usando:
 - JSON Schema Validator
 - ExtentReports (adapter cucumber7)
 
+## 📥 Clonar o repositório
+Repositório: https://github.com/tobiascorrea/dog-api
+
+```
+git clone https://github.com/tobiascorrea/dog-api.git
+cd dog-api/dog-api-automation
+```
+
 ## ✅ Objetivos
 Cobrir validações funcionais, negativas, contrato (schema), consistência de URLs e limites (count), mantendo cenários independentes e steps altamente coesos.
+
+## 🧰 Pré-requisitos
+- Java 21 (JAVA_HOME configurado)
+- Maven 3.9+
+- Acesso à internet para a Dog API
 
 ## 🚀 Execução
 ```
 mvn clean test
+```
+Base URL (opcional):
+```
+mvn test -DbaseUrl=https://dog.ceo/api
 ```
 Filtrar por tags (exemplos):
 ```
