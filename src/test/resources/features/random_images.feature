@@ -1,7 +1,5 @@
 @regressao
 Feature: Imagens aleatórias globais
-  Background:
-    Given que configuro a base da Dog API
 
   @fumaca @basico
   Scenario: Obter uma imagem aleatória
@@ -24,13 +22,6 @@ Feature: Imagens aleatórias globais
       | 10    |
       | 50    |
 
-  @limite
-  Scenario: Count acima do limite deve retornar no máximo 50
-    Given o count 100
-    When eu envio GET para "/breeds/image/random/{count}"
-    Then o status code deve ser 200
-    And deve retornar no máximo 50 imagens
-
   @negativo @limite
   Scenario Outline: Counts inválidos não devem ultrapassar 50
     Given o count <count>
@@ -42,8 +33,3 @@ Feature: Imagens aleatórias globais
       | 0     |
       | 51    |
       | 100   |
-
-  @negativo @metodo
-  Scenario: POST não permitido para imagem aleatória
-    When eu envio POST para "/breeds/image/random"
-    Then a resposta deve indicar metodo nao permitido

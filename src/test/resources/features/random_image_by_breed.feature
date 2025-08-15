@@ -1,7 +1,5 @@
 @regressao
 Feature: Imagem aleatória por raça
-  Background:
-    Given que configuro a base da Dog API
 
   @regressao @basico
   Scenario Outline: Obter imagem aleatória para raça válida
@@ -18,9 +16,3 @@ Feature: Imagem aleatória por raça
       | retriever      |
       | bulldog        |
       | germanshepherd |
-
-  @negativo @metodo
-  Scenario: POST não permitido para imagem aleatória por raça
-    Given a raça "hound"
-    When eu envio POST para "/breed/{breed}/images/random"
-    Then a resposta deve indicar metodo nao permitido

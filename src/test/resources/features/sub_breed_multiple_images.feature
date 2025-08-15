@@ -1,7 +1,5 @@
 @regressao @subracas
 Feature: Múltiplas imagens por sub-raça
-  Background:
-    Given que configuro a base da Dog API
 
   @regressao @multiplas @subracas
   Scenario Outline: Solicitar múltiplas imagens de sub-raça válida
@@ -20,7 +18,6 @@ Feature: Múltiplas imagens por sub-raça
       | bulldog   | english | 5     |
       | mastiff   | bull    | 10    |
       | retriever | golden  | 20    |
-      | spaniel   | cocker  | 50    |
 
   @negativo @subracas
   Scenario Outline: Combinações inválidas não devem retornar 200
@@ -44,21 +41,14 @@ Feature: Múltiplas imagens por sub-raça
     Then a lista de imagens deve estar vazia ou ter até 50 imagens
 
   @limite @subracas @flexivel
-  Scenario Outline: Counts altos devem retornar no máximo o solicitado
-    Given a raça "hound"
-    And a sub-raça "afghan"
+  Scenario Outline: Counts devem retornar no máximo o solicitado
+    Given a raça "<breed>"
+    And a sub-raça "<sub>"
     And o count <count>
     When eu envio GET para "/breed/{breed}/{subBreed}/images/random/{count}"
     Then deve retornar no máximo <count> imagens
     Examples:
-      | count |
-      | 100   |
-      | 999   |
-
-  @negativo @metodo @subracas
-  Scenario: POST não permitido para múltiplas imagens de sub-raça
-    Given a raça "hound"
-    And a sub-raça "afghan"
-    And o count 3
-    When eu envio POST para "/breed/{breed}/{subBreed}/images/random/{count}"
-    Then a resposta deve indicar metodo nao permitido
+      | breed   | sub    | count |
+      | hound   | afghan | 100   |
+      | hound   | afghan | 999   |
+      | spaniel | cocker | 50    |

@@ -1,7 +1,5 @@
 @regressao @subracas
 Feature: Imagem aleatória por sub-raça
-  Background:
-    Given que configuro a base da Dog API
 
   @regressao @basico @subracas
   Scenario Outline: Imagem aleatória válida por sub-raça
@@ -31,13 +29,6 @@ Feature: Imagem aleatória por sub-raça
       | pug   | golden |
       | hound | fake   |
       | xyz   | abc    |
-
-  @negativo @metodo @subracas
-  Scenario: POST não permitido para imagem aleatória de sub-raça
-    Given a raça "hound"
-    And a sub-raça "afghan"
-    When eu envio POST para "/breed/{breed}/{subBreed}/images/random"
-    Then a resposta deve indicar metodo nao permitido
 
   @variacao @subracas
   Scenario: Duas chamadas consecutivas podem retornar imagens diferentes

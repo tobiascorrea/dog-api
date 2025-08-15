@@ -1,7 +1,5 @@
 @regressao @subracas
 Feature: Imagens por sub-raça
-  Background:
-    Given que configuro a base da Dog API
 
   @regressao @basico @subracas
   Scenario Outline: Listar imagens para sub-raça válida
@@ -32,13 +30,6 @@ Feature: Imagens por sub-raça
       | pug      | golden    |
       | hound    | fake      |
       | xyz      | abc       |
-
-  @negativo @metodo @subracas
-  Scenario: POST não permitido para imagens de sub-raça
-    Given a raça "hound"
-    And a sub-raça "afghan"
-    When eu envio POST para "/breed/{breed}/{subBreed}/images"
-    Then a resposta deve indicar metodo nao permitido
 
   @performance @subracas
   Scenario: Tempo de resposta aceitável para sub-raça

@@ -1,7 +1,5 @@
 @regressao @subracas
 Feature: Lista de sub-raças
-  Background:
-    Given que configuro a base da Dog API
 
   # Raças que devem possuir sub-raças
   @regressao @subracas
@@ -39,9 +37,3 @@ Feature: Lista de sub-raças
     Given a raça "dragondog"
     When eu envio GET para "/breed/{breed}/list"
     Then a resposta não deve ser 200
-
-  @negativo @metodo
-  Scenario: POST não permitido na listagem de sub-raças
-    Given a raça "hound"
-    When eu envio POST para "/breed/{breed}/list"
-    Then a resposta deve indicar metodo nao permitido

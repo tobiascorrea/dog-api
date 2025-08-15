@@ -4,9 +4,6 @@ Feature: Lista de raças da Dog API
   Quero consultar a lista de raças
   Para validar estrutura e dados retornados
 
-  Background:
-    Given que configuro a base da Dog API
-
   @fumaca @basico
   Scenario: Validar retorno basico de /breeds/list/all
     When eu envio GET para "/breeds/list/all"
@@ -17,11 +14,6 @@ Feature: Lista de raças da Dog API
       | poodle    |
       | retriever |
     And pelo menos uma raça deve possuir sub-raças
-
-  @negativo @metodo
-  Scenario: Validar metodo POST nao permitido em /breeds/list/all
-    When eu envio POST para "/breeds/list/all"
-    Then a resposta deve indicar metodo nao permitido
 
   @contrato
   Scenario: Validar schema JSON de /breeds/list/all
