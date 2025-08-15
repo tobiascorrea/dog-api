@@ -18,7 +18,7 @@ env:
 
 jobs:
   smoke:
-    name: Smoke (@fumaca)
+    name: Smoke Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -76,7 +76,7 @@ jobs:
           fi
 
   test:
-    name: Regressão (Java 21)
+    name: Regressão
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: smoke
