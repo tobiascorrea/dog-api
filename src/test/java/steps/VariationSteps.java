@@ -15,14 +15,8 @@ public class VariationSteps {
     @Quando("eu realizo duas chamadas GET para {string} e comparo os resultados")
     public void duasChamadasGet(String endpoint) {
         String path = resolve(endpoint);
-        Response first = given().when().get(path);
         Response second = given().when().get(path);
-        context.setResponse(second); // mantém última para demais validações
-        String f = first.jsonPath().getString("message");
-        String s = second.jsonPath().getString("message");
-        if (f != null && s != null && f.equals(s)) {
-            System.out.println("[INFO] Mesma imagem retornada em chamadas consecutivas: " + f);
-        }
+        context.setResponse(second);
     }
 
     private String resolve(String raw) {
@@ -33,4 +27,3 @@ public class VariationSteps {
         return r;
     }
 }
-
