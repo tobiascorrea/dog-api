@@ -8,7 +8,6 @@ import support.ScenarioContext;
 import java.util.List;
 import java.util.Map;
 
-// Classe reimplementada para conter validações da lista de raças.
 
 public class BreedListSteps {
 
