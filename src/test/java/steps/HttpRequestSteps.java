@@ -35,11 +35,35 @@ public class HttpRequestSteps {
     }
 
     private void parseImages(Response res) {
-        Object msg = res.jsonPath().get("message");
-        if (msg instanceof java.util.List<?>) {
-            context.setImages(res.jsonPath().getList("message"));
-        } else if (msg instanceof String) {
-            context.setImageUrl((String) msg);
+        // Se a resposta não for 200, não tentar parsear como JSON (pode ser HTML/erro)
+        if (res == null || res.getStatusCode() != 200) return;
+
+        String body = res.getBody().asString();
+        String contentType = res.getHeader("Content-Type");
+
+        boolean looksLikeJson = false;
+        if (contentType != null && contentType.toLowerCase().contains("application/json")) {
+            looksLikeJson = true;
+        } else if (body != null) {
+            String t = body.trim();
+            looksLikeJson = t.startsWith("{") || t.startsWith("[");
+        }
+
+        if (!looksLikeJson) {
+            // Não tentar parsear JSON quando a resposta aparenta ser HTML/erro
+            return;
+        }
+
+        try {
+            Object msg = res.jsonPath().get("message");
+            if (msg instanceof java.util.List<?>) {
+                context.setImages(res.jsonPath().getList("message"));
+            } else if (msg instanceof String) {
+                context.setImageUrl((String) msg);
+            }
+        } catch (Exception e) {
+            // Protege contra JsonPathException se o corpo não for JSON válido
+            // Não setar imagens/imagem para que os asserts posteriores falhem de forma clara
         }
     }
 }

@@ -15,4 +15,4 @@ Feature: Imagem aleatória por raça
       | pug            |
       | retriever      |
       | bulldog        |
-      | germanshepherd |
+      | beagle         |
